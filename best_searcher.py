@@ -1,4 +1,4 @@
-from resources import ScienceTokens
+from resources import CardStatus, ScienceTokens
 from player import Player
 from session import Session
 from table import FirstAgeTable, SecondAgeTable, ThirdAgeTable
@@ -14,26 +14,44 @@ from copy import deepcopy
 
 first_table_original = FirstAgeTable(1, first_age_cards)
 first_table_original.set_layout([
-    [cklad_kamnei, cklad_glini, cklad_drevesini, lesopoval, glin_carier, taverna],
-        [None, None, None, None, None],
-          [apteka, bani, altar, masterskaia],
-            [None, None, None],
-               [carier, lesopozagatovka],
+    [(cklad_kamnei, CardStatus.CAN_BE_TAKEN), (cklad_glini, CardStatus.CAN_BE_TAKEN), (cklad_drevesini, CardStatus.CAN_BE_TAKEN),
+                    (lesopoval, CardStatus.CAN_BE_TAKEN), (konushna, CardStatus.CAN_BE_TAKEN), (taverna, CardStatus.CAN_BE_TAKEN)],
+        
+        [(stekl_masterskaia, CardStatus.LOCKED), (masterskaia, CardStatus.LOCKED), (None, CardStatus.LOCKED), (None, CardStatus.LOCKED), (None, CardStatus.LOCKED)],
+            [(apteka, CardStatus.LOCKED), (bani, CardStatus.LOCKED), (altar, CardStatus.LOCKED), (glin_carier, CardStatus.LOCKED)],
+                  [(None, CardStatus.LOCKED), (None, CardStatus.LOCKED), (None, CardStatus.LOCKED)],
+                        [(carier, CardStatus.LOCKED), (lesopozagatovka, CardStatus.LOCKED)],
 ])
 
 def single_game():
-    good_player = Player(available_wonders=[
-        koloss_rodosski,
-        zeus_statue,
-        bolshoi_zirk,
-        mausalei
-    ])
-    opponent = Player(available_wonders=[
-        artemis_hram,
-        pirei,
-        visachie_sadi,
-        bolshoi_sphinks
-    ])
+    good_player = Player(
+        current_money=7,
+        available_wonders=[
+            visachie_sadi,
+            bolshoi_sphinks,
+            artemis_hram,
+            pirei,
+        ],
+        built_wonders=[
+        ],
+        science_tokens=[],
+        cards=[
+        ]
+    )
+    opponent = Player(
+        current_money=7,
+        available_wonders=[
+            koloss_rodosski,
+            zeus_statue,
+            bolshoi_zirk,
+            alexandriskaia_bibl,
+        ],
+        built_wonders=[
+        ],
+        science_tokens=[],
+        cards=[
+        ]
+    )
 
     good_player.set_opponent(opponent)
     opponent.set_opponent(good_player)
@@ -42,7 +60,7 @@ def single_game():
 
     sess = Session(good_player, opponent, first_table, [
         ScienceTokens.ARCHITECTURE, ScienceTokens.AGRICULTURE, ScienceTokens.ECONOMY, ScienceTokens.LAW, ScienceTokens.MASONRY
-    ])
+    ], war_status=0)
 
     turn_friendly = True
     cur_player = good_player
@@ -51,6 +69,11 @@ def single_game():
         while is_extra_turn and not sess.check_age_end():
             is_extra_turn = sess.make_turn(cur_player) 
         
+        if sess.check_war_victory(cur_player):
+            return (cur_player is good_player, sess.first_action)
+        if sess.check_science_victory(cur_player):
+            return (cur_player is good_player, sess.first_action)
+
         turn_friendly = not turn_friendly
         if turn_friendly: cur_player = good_player
         else: cur_player = opponent
@@ -74,16 +97,15 @@ def single_game():
         is_extra_turn = sess.make_turn(cur_player) 
         while is_extra_turn and not sess.check_age_end():
             is_extra_turn = sess.make_turn(cur_player) 
-        
-        turn_friendly = not turn_friendly
-        if turn_friendly: cur_player = good_player
-        else: cur_player = opponent
 
         if sess.check_war_victory(cur_player):
             return (cur_player is good_player, sess.first_action)
         if sess.check_science_victory(cur_player):
             return (cur_player is good_player, sess.first_action)
 
+        turn_friendly = not turn_friendly
+        if turn_friendly: cur_player = good_player
+        else: cur_player = opponent
     
     third_table = ThirdAgeTable(3, third_age_cards, third_age_gilds)
     third_table.start_layout()
@@ -105,19 +127,19 @@ def single_game():
         while is_extra_turn and not sess.check_age_end():
             is_extra_turn = sess.make_turn(cur_player) 
         
-        turn_friendly = not turn_friendly
-        if turn_friendly: cur_player = good_player
-        else: cur_player = opponent
-
         if sess.check_war_victory(cur_player):
             return (cur_player is good_player, sess.first_action)
         if sess.check_science_victory(cur_player):
             return (cur_player is good_player, sess.first_action)
+
+        turn_friendly = not turn_friendly
+        if turn_friendly: cur_player = good_player
+        else: cur_player = opponent
     
     return (sess.calculate_win_points(good_player) > sess.calculate_win_points(opponent), sess.first_action)
 
 
-sessions_count = 10_000
+sessions_count = 15_000
 sum = 0
 result = {}
 start = time()

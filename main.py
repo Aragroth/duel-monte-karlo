@@ -25,8 +25,8 @@ def single_game():
         bolshoi_zirk,
         mausalei
     ]
-    good_player = Player(available_wonders=best_wonders)
-    opponent = Player(available_wonders=worst_wonders)
+    good_player = Player(available_wonders=worst_wonders)
+    opponent = Player(available_wonders=best_wonders)
 
     good_player.set_opponent(opponent)
     opponent.set_opponent(good_player)
@@ -44,6 +44,11 @@ def single_game():
         while is_extra_turn and not sess.check_age_end():
             is_extra_turn = sess.make_turn(cur_player) 
         
+        if sess.check_war_victory(cur_player):
+            return 1
+        if sess.check_science_victory(cur_player):
+            return 2
+
         turn_friendly = not turn_friendly
         if turn_friendly: cur_player = good_player
         else: cur_player = opponent
@@ -68,14 +73,16 @@ def single_game():
         while is_extra_turn and not sess.check_age_end():
             is_extra_turn = sess.make_turn(cur_player) 
         
-        turn_friendly = not turn_friendly
-        if turn_friendly: cur_player = good_player
-        else: cur_player = opponent
-
         if sess.check_war_victory(cur_player):
             return 1
         if sess.check_science_victory(cur_player):
             return 2
+        
+        turn_friendly = not turn_friendly
+        if turn_friendly: cur_player = good_player
+        else: cur_player = opponent
+
+        
 
     
     third_table = ThirdAgeTable(3, third_age_cards, third_age_gilds)
@@ -98,15 +105,15 @@ def single_game():
         while is_extra_turn and not sess.check_age_end():
             is_extra_turn = sess.make_turn(cur_player) 
         
-        turn_friendly = not turn_friendly
-        if turn_friendly: cur_player = good_player
-        else: cur_player = opponent
-
         if sess.check_war_victory(cur_player):
             return 1
         if sess.check_science_victory(cur_player):
             return 2
-    
+        
+        turn_friendly = not turn_friendly
+        if turn_friendly: cur_player = good_player
+        else: cur_player = opponent
+
     return 3
 
 

@@ -106,19 +106,12 @@ class FirstAgeTable(Table):
         for sides_ind in range(len(sides)):
             side = []
             for i in range(len(layout[sides_ind])):
-                if sides[sides_ind] % 2 == 0:
-                    side.append(
-                        CardTable(layout[sides_ind][i], CardStatus.LOCKED)
-                    )
-                    self.used_cards.append(layout[sides_ind][i])
-                else:
-                    side.append(
-                        CardTable(layout[sides_ind][i], CardStatus.LOCKED)
-                    )
+                if layout[sides_ind][i][0] is not None:
+                    self.used_cards.append(layout[sides_ind][i][0])
+                side.append(
+                    CardTable(layout[sides_ind][i][0], layout[sides_ind][i][1])
+                )
             self.layout.append(side)
-
-        for i in range(6):
-            self.layout[0][i].status = CardStatus.CAN_BE_TAKEN
 
     def open_other_cards(self):
         for row_ind in range(1, len(self.layout)):
@@ -164,7 +157,20 @@ class SecondAgeTable(Table):
         
         for i in range(2):
             self.layout[0][i].status = CardStatus.CAN_BE_TAKEN
-    
+
+    def set_layout(self, layout):
+        self.layout = [] 
+        sides = [2, 3, 4, 5, 6]
+        for sides_ind in range(len(sides)):
+            side = []
+            for i in range(len(layout[sides_ind])):
+                if layout[sides_ind][i][0] is not None:
+                    self.used_cards.append(layout[sides_ind][i][0])
+                side.append(
+                    CardTable(layout[sides_ind][i][0], layout[sides_ind][i][1])
+                )
+            self.layout.append(side)
+
     def open_other_cards(self):
         for row_ind in range(1, len(self.layout)):
             row = self.layout[row_ind]
@@ -224,6 +230,19 @@ class ThirdAgeTable(Table):
         for i in range(2):
             self.layout[0][i].status = CardStatus.CAN_BE_TAKEN
     
+    def set_layout(self, layout):
+        self.layout = [] 
+        sides = [2, 3, 4, 2, 4, 3, 2]
+        for sides_ind in range(len(sides)):
+            side = []
+            for i in range(len(layout[sides_ind])):
+                if layout[sides_ind][i][0] is not None:
+                    self.used_cards.append(layout[sides_ind][i][0])
+                side.append(
+                    CardTable(layout[sides_ind][i][0], layout[sides_ind][i][1])
+                )
+            self.layout.append(side)
+
     def open_other_cards(self):
         for row_ind in range(1, len(self.layout)):
             row = self.layout[row_ind]

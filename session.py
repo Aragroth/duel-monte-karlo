@@ -70,8 +70,6 @@ class Session:
         return self.war_status * (-1) ** (player is self.opponent) >= 9 
 
     def check_science_victory(self, player: Player):
-        if len(set(player.science_symbols)) == 4:
-            pass
         return len(set(player.science_symbols)) >= 6
     
     def calculate_win_points(self, player: Player):
@@ -122,16 +120,24 @@ class Session:
 
     def make_turn(self, player: Player):
         next_extra_turn = False
-        sel_card: Card = self.table.select_card()
 
+        available_green_cards = [
+            card.card for row in self.table.layout for card in row
+            if card.status is CardStatus.CAN_BE_TAKEN and card.card.color is CardColor.GREEN
+        ]
 
-        # TODO add less probablity to action of just selling, becuase wonders often just sold 
-        available_actions = [self.Actions.BUILD_CARD, self.Actions.SELL_CARD]
-        if player.is_allowed_build_wonder():
-            available_actions.append(self.Actions.BUILD_WONDER)
-        selected_action = random.choice(available_actions)
+        # if opponent is aggressive in science victory
+        if player is self.opponent and len(available_green_cards) > 0 and random.choice([True, False]):
+            sel_card = random.choice(available_green_cards)
+            selected_action = self.Actions.BUILD_CARD
 
-        
+        else:
+            sel_card: Card = self.table.select_card()
+            # TODO add less probablity to action of just selling, becuase wonders often just sold 
+            available_actions = [self.Actions.BUILD_CARD, self.Actions.SELL_CARD]
+            if player.is_allowed_build_wonder():
+                available_actions.append(self.Actions.BUILD_WONDER)
+            selected_action = random.choice(available_actions)
 
         if selected_action is self.Actions.BUILD_CARD:
             has_built = player.try_build_card(sel_card)
@@ -165,7 +171,7 @@ class Session:
             
             if has_built:
                 if self.first_action is None:
-                    self.first_action = (selected_action, sel_card)
+                    self.first_action = (selected_action, f"({sel_card.title}) - {sel_wonder.title}")
 
                 next_extra_turn = sel_wonder.extra_turn or ScienceTokens.THEOLOGY in player.science_tokens
                 self.update_war(player, sel_wonder.attack_points)
